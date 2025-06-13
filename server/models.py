@@ -22,6 +22,9 @@ class Review(db.Model, SerializerMixin):
     customer = db.relationship('Customer', back_populates='reviews')
     item = db.relationship('Item', back_populates='reviews')
 
+    # Prevent recursion by excluding backrefs
+    serialize_rules = ('-customer.reviews', '-item.reviews')
+
     def __repr__(self):
         return f'<Review {self.id}, Customer {self.customer_id}, Item {self.item_id}>'
 
@@ -34,6 +37,9 @@ class Customer(db.Model, SerializerMixin):
 
     reviews = db.relationship('Review', back_populates='customer')
     items = association_proxy('reviews', 'item')
+
+    # Prevent recursion by excluding backrefs
+    serialize_rules = ('-reviews.customer', '-items.customers')
 
     def __repr__(self):
         return f'<Customer {self.id}, {self.name}>'
@@ -48,6 +54,9 @@ class Item(db.Model, SerializerMixin):
 
     reviews = db.relationship('Review', back_populates='item')
     customers = association_proxy('reviews', 'customer')
+
+    # Prevent recursion by excluding backrefs
+    serialize_rules = ('-reviews.item', '-customers.items')
 
     def __repr__(self):
         return f'<Item {self.id}, {self.name}, {self.price}>'
